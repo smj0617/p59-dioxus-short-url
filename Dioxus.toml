@@ -1,0 +1,6 @@
+[application]
+name = "p59-dioxus-short-url"
+default_platform = "web"
+
+[web.app]
+title = "숫자형 단축 URL"

@@ -1,0 +1,8 @@
+target
+.git
+.env
+.env.*
+!.env.example
+cloudflare/public/assets
+cloudflare/node_modules
+cloudflare/.wrangler

@@ -1,0 +1,13 @@
+{
+  "name": "p59-dioxus-short-url-edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare-assets": "bash ./prepare-assets.sh",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

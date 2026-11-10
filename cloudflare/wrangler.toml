@@ -1,0 +1,26 @@
+# Cloudflare Workers 설정 (공개 접점 + Dioxus 웹 번들 정적 자산)
+#
+# 배포:  cd cloudflare && npx wrangler deploy
+# 공개 주소: https://p59-dioxus-short-url.<계정 서브도메인>.workers.dev
+
+name = "p59-dioxus-short-url"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+# Dioxus 웹 번들(dx bundle 결과의 public/assets)을 Workers Static Assets 로 올린다.
+# run_worker_first = true: 모든 요청이 먼저 Worker 를 거친다.
+#   → `/` 는 정적 index.html 대신 Railway 의 SSR HTML 을 받고,
+#   → `/123` 같은 숫자 경로는 반드시 Railway 리디렉션으로 간다.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+# Railway 백엔드의 공개 도메인. 배포 전에 실제 값으로 바꾸세요 (비밀 값이 아님).
+# 대시보드 Settings → Variables 에서 덮어써도 됩니다.
+[vars]
+BACKEND_ORIGIN = "https://REPLACE-WITH-YOUR-RAILWAY-DOMAIN.up.railway.app"
+
+[observability]
+enabled = true

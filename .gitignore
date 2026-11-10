@@ -1,0 +1,11 @@
+/target
+/dist
+.env
+.env.*
+!.env.example
+
+# Cloudflare: dx bundle 결과를 복사해 업로드하는 폴더 (빌드 산출물)
+/cloudflare/public/*
+!/cloudflare/public/.assetsignore
+/cloudflare/node_modules
+/cloudflare/.wrangler

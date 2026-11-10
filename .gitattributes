@@ -1,0 +1,6 @@
+# sqlx 는 마이그레이션 파일 체크섬을 DB에 기록한다.
+# OS마다 줄바꿈이 달라지면 재배포 때 체크섬 불일치가 나므로 LF 로 고정한다.
+*.sql text eol=lf
+*.rs text eol=lf
+*.toml text eol=lf
+*.js text eol=lf
