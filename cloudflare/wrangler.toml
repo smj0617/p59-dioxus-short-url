@@ -20,7 +20,7 @@ run_worker_first = true
 # Railway 백엔드의 공개 도메인. 배포 전에 실제 값으로 바꾸세요 (비밀 값이 아님).
 # 대시보드 Settings → Variables 에서 덮어써도 됩니다.
 [vars]
-BACKEND_ORIGIN = "https://REPLACE-WITH-YOUR-RAILWAY-DOMAIN.up.railway.app"
+BACKEND_ORIGIN = "https://p59-dioxus-short-url-production.up.railway.app"
 
 [observability]
 enabled = true

@@ -2,9 +2,9 @@
 
 ## 배포 URL
 
-- 서비스 URL: (배포 후 기입)
-- 테스트 단축 URL: (배포 후 기입)
-- 테스트 원본 URL: (배포 후 기입)
+- 서비스 URL: https://p59-dioxus-short-url.p59-dioxus-short-url-edge.workers.dev
+- 테스트 단축 URL: https://p59-dioxus-short-url.p59-dioxus-short-url-edge.workers.dev/63
+- 테스트 원본 URL: https://doc.rust-lang.org/book/ch01-01-installation.html?from=p59-short-url#installing-rustup-on-windows
 
 ---
 
@@ -112,8 +112,9 @@ node scripts/smoke-test.mjs http://127.0.0.1:8787   # 실행 중인 서버에 �
 1. `cloudflare/wrangler.toml`의 `BACKEND_ORIGIN`을 위 Railway 도메인으로 바꿉니다(비밀 값 아님).
 2. 웹 번들 정적 자산을 준비합니다.
    ```bash
-   bash cloudflare/prepare-assets.sh      # dx bundle 후 public/assets 를 cloudflare/public/ 에 복사
+   bash cloudflare/prepare-assets.sh      # Railway 와 같은 Dockerfile 로 빌드한 이미지에서 public/assets 를 꺼내 cloudflare/public/ 에 복사
    ```
+   Railway(Linux)와 같은 빌드에서 꺼내야 wasm·js 파일명 해시가 Railway 가 내려주는 HTML 과 일치해 엣지에서 바로 응답됩니다. Docker 없이 `--local`로 로컬 `dx bundle` 결과를 써도 동작은 합니다(해시가 다르면 Worker 가 Railway 로 넘김).
 3. 배포합니다.
    ```bash
    cd cloudflare
@@ -121,7 +122,7 @@ node scripts/smoke-test.mjs http://127.0.0.1:8787   # 실행 중인 서버에 �
    npx wrangler login
    npx wrangler deploy
    ```
-4. 출력된 `https://p59-dioxus-short-url.<계정>.workers.dev`가 서비스 URL입니다(HTTPS 기본 제공). 커스텀 도메인을 쓰려면 Workers 설정의 **Domains & Routes**에서 연결합니다.
+4. 출력된 `https://p59-dioxus-short-url.<workers.dev 서브도메인>.workers.dev`가 서비스 URL입니다(HTTPS 기본 제공). 처음 쓰는 계정은 Cloudflare 이메일 인증을 마쳐야 Worker 를 배포할 수 있습니다. 커스텀 도메인을 쓰려면 Workers 설정의 **Domains & Routes**에서 연결합니다.
 
 ### 라우팅 구성과 이유
 
@@ -171,7 +172,7 @@ id BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1 NO CYCLE) PR
 
 ## 검증 시나리오와 결과
 
-`scripts/smoke-test.mjs`로 재현할 수 있습니다. 아래는 로컬에서 세 경로로 실행한 결과입니다: ① 릴리스 빌드 서버 + Docker PostgreSQL 17, ② Railway와 같은 `Dockerfile`로 만든 컨테이너, ③ 로컬 `wrangler dev`로 띄운 Cloudflare Worker를 거친 경로. 세 경로 모두 전 항목 통과했습니다. 배포 환경에서의 결과는 배포 후 같은 스크립트를 공개 주소로 실행해 확인합니다.
+`scripts/smoke-test.mjs`로 재현할 수 있습니다. 아래는 로컬에서 세 경로로 실행한 결과입니다: ① 릴리스 빌드 서버 + Docker PostgreSQL 17, ② Railway와 같은 `Dockerfile`로 만든 컨테이너, ③ 로컬 `wrangler dev`로 띄운 Cloudflare Worker를 거친 경로. 세 경로 모두 전 항목 통과했습니다. 배포 환경 결과는 아래에 따로 적었습니다.
 
 | 시나리오 | 방법 | 로컬 결과 |
 | --- | --- | --- |
@@ -184,8 +185,15 @@ id BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1 NO CYCLE) PR
 | 기존 연결 변경 시도 | `PUT/PATCH/DELETE/POST /<번호>`, `PUT/PATCH/DELETE /api/short-urls/<번호>` | 모두 `405`, 이후에도 원래 원본으로 이동 |
 | DB 직접 변경 시도 | `UPDATE`/`DELETE` SQL, id 지정 `INSERT`, `ftp://` INSERT | 트리거·IDENTITY·CHECK 제약이 모두 거부 |
 
-배포 후 확인:
+### 배포 환경 결과 (2026-11-10)
+
+- Railway 백엔드 `https://p59-dioxus-short-url-production.up.railway.app`: `/healthz` → `200 ok`, `node scripts/smoke-test.mjs` 전 항목 통과
+- Cloudflare 공개 주소 `https://p59-dioxus-short-url.p59-dioxus-short-url-edge.workers.dev`: 같은 스크립트 전 항목 통과 (생성, 302 리디렉션·프래그먼트 보존, 동시 생성 30건 번호 중복 없음, 잘못된 URL 400, 없는 번호 404, 변경 요청 405)
+- `/` 는 Worker → Railway SSR(`x-served-by: cloudflare-worker->railway`), wasm·js·css 는 엣지(`x-served-by: cloudflare-assets`)에서 응답
+- 브라우저에서 위 테스트 원본 URL로 `/63` 을 만들고, `/63` 에 접속해 `#installing-rustup-on-windows` 까지 포함한 원본 주소로 이동하는 것을 확인
+
+재현:
 
 ```bash
-node scripts/smoke-test.mjs https://<워커 주소>
+node scripts/smoke-test.mjs https://p59-dioxus-short-url.p59-dioxus-short-url-edge.workers.dev
 ```
